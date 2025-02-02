@@ -8,14 +8,17 @@
 import Foundation
 import UIKit
 
-final class NetworkManager {
-    static let shared = NetworkManager()
+final class NetworkManager: NetworkManagerProtocol {
     var dataCounter = 1
     var imageCounter = 1
 
-    private init() {}
+    private var storageManager: StorageManagerProtocol?
 
-    func fetchAlbums(albumName: String, completion: @escaping (Result<[Album], Error>) -> Void) {
+    init(storageManager: StorageManagerProtocol?) {
+        self.storageManager = storageManager
+    }
+
+    func loadAlbums(albumName: String, completion: @escaping (Result<[Album], Error>) -> Void) {
         let baseURL = "https://itunes.apple.com/search"
         let term = albumName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let urlString = "\(baseURL)?term=\(term)&entity=album&attribute=albumTerm"
@@ -61,7 +64,7 @@ final class NetworkManager {
 
     func loadImage(from urlString: String, completion: @escaping (UIImage?) -> Void) {
 
-        if let imageData = KeychainSevice.shared.loadImage(key: urlString),
+        if let imageData = storageManager?.loadImage(key: urlString),
            let image = UIImage(data: imageData) {
             completion(image)
             return
@@ -83,7 +86,7 @@ final class NetworkManager {
 
             if let data,
                let image = UIImage(data: data) {
-                KeychainSevice.shared.saveImage(data, key: urlString)
+                self.storageManager?.saveImage(data, key: urlString)
                 DispatchQueue.main.async {
                     completion(image)
                     print("Load image \(self.imageCounter)")

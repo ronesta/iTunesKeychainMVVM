@@ -8,13 +8,9 @@
 import Foundation
 import Security
 
-final class KeychainSevice {
-    static let shared = KeychainSevice()
-
+final class KeychainSevice: StorageManagerProtocol {
     private let queue = DispatchQueue(label: "KeychainServiceQueue")
     private let historyKey = "searchHistory"
-
-    private init() {}
 
     func saveAlbum(_ album: Album, for searchTerm: String) {
         let key = "\(searchTerm)-\(album.artistId)"
